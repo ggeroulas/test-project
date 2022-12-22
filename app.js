@@ -64,5 +64,6 @@ const productJsonArraySorted = productJsonArray;
 productJsonArraySorted.push(productJsonArray[productJson.limit-1]);
 productJsonArraySorted.sort((a, b) => a.title.localeCompare(b.title));
 console.log(productJsonArraySorted);
+fs.writeFileSync('./data/products_sorted.txt', productJsonArraySorted);
 
 
