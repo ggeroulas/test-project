@@ -60,9 +60,13 @@ productJson.limit = productJson.limit + 1;
 
 // Sort the list alphabetically by title and store in a file
 
-const limit = productJson.limit - 1;
 const productJsonArraySorted = [];
 productJsonArraySorted.push(productJsonArray[productJson.limit-1]);
 console.log(productJsonArraySorted);
+
+for (i in productJsonArray-1) {
+
+
+}
 
 
