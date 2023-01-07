@@ -17,13 +17,21 @@ Node.js
 const axios = require('axios');
 const fs = require('fs');
 const dataset = 'https://dummyjson.com';
+const { Pool, Client } = require('pg')
+const pool = new Pool({
+  user: 'postgres',
+  host: 'host.docker.internal',
+  database: 'fenton',
+  password: 'postgrespw',
+  port: 49153,
+})
 
 // Get product list and store in a text file
 axios.get(dataset.concat('/products'))
   .then(function (response) {
     console.log(response.status)
     try {
-      const output = JSON.stringify(response.data);
+      const output = JSON.stringify(response.data, null, 2);
       fs.writeFileSync('./data/products.txt', output); 
       console.log("Product data written succesfully!");
     } catch (err) {
@@ -43,7 +51,7 @@ const productJsonArray = productJson.products;
 
 for (i in productJsonArray) {
  if (productJsonArray[i].title == "iPhone 9") {
-  console.log(productJsonArray[i]);
+  //console.log(productJsonArray[i]);
   break;
  }
 }
@@ -53,7 +61,6 @@ for (i in productJsonArray) {
 const newItemId = productJson.limit + 1;
 const newItemJson = {id: newItemId, title: 'Pixel 3', description: 'Best phone bar none', price: '500', discountPercentage: 10.00, rating: 5.00, stock: 0, brand: 'Google', category: 'smartphones', thumbnail: 'https://i.dummyjson.com/data/products/31/thumbnail.jpg', images: []};
 productJsonArray.push(newItemJson);
-//console.log(productJsonArray[30]);
 productJson.products = productJsonArray;
 productJson.limit = productJson.limit + 1;
 //console.log(productJson);
@@ -63,7 +70,24 @@ productJson.limit = productJson.limit + 1;
 const productJsonArraySorted = productJsonArray;
 productJsonArraySorted.push(productJsonArray[productJson.limit-1]);
 productJsonArraySorted.sort((a, b) => a.title.localeCompare(b.title));
-console.log(productJsonArraySorted);
-fs.writeFileSync('./data/products_sorted.txt', productJsonArraySorted);
+//console.log(productJsonArraySorted);
+fs.writeFileSync('./data/products_sorted.txt', JSON.stringify(productJsonArraySorted, null, 2));
 
+// Insert product list into postgres db
 
+for (i in productJsonArray) {
+  const id = productJsonArray[i].id;
+  const product = productJsonArray[i];
+  try {  
+    pool.query(
+        `INSERT INTO products VALUES ($1, $2)`, [id, product]); 
+  } catch (error) {
+    console.error(error.stack);
+  }
+}
+
+// Get a list of products from db
+
+pool.query('SELECT * from products', (err, res) => {
+  console.log(err, res)
+})
